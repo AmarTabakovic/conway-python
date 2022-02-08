@@ -55,7 +55,7 @@ class Game(tk.Tk):
         self.canvas.delete("all")
         self.draw()
         self.enforce_rules()
-        self.after(100, self.game_loop)
+        self.after(50, self.game_loop)
         
     def enforce_rules(self):
         temp_cells = [[0 for x in range(self.grid.width)] for x in range(self.grid.height)]
