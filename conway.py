@@ -1,6 +1,5 @@
 import tkinter as tk
 from random import randrange
-import sys
 import argparse
 import math
 import csv
