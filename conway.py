@@ -1,7 +1,9 @@
 import tkinter as tk
 from random import randrange
 import sys
+import argparse
 import math
+import csv
 
 class Grid():
     def __init__(self):
@@ -12,7 +14,7 @@ class Grid():
         self.center_y = math.floor(self.height / 2)
 
 class Game(tk.Tk):
-    def __init__(self):
+    def __init__(self, file_name = None):
         tk.Tk.__init__(self)
         self.grid = Grid()
         self.window_width = 1000
@@ -22,9 +24,23 @@ class Game(tk.Tk):
         self.canvas.pack()
         self.title("Conway's Game of Life")
 
-        self.init_random()
+        if file_name == None:
+            self.init_random()
+        else:
+            self.init_from_file(file_name=file_name)
+
         self.game_loop()
-    
+
+    def init_from_file(self, file_name):
+        try:
+            file = open(file_name, "r")
+            csv_reader = csv.reader(file, delimiter=",")
+            for row in csv_reader:
+                self.grid.cells[int(row[1])][int(row[0])] = 1
+        except FileNotFoundError:
+            print("File does not exist")
+            exit(1)
+
     def init_random(self):
         rand = randrange(30, 50)
         i = 0
@@ -39,7 +55,7 @@ class Game(tk.Tk):
         self.canvas.delete("all")
         self.draw()
         self.enforce_rules()
-        self.after(50, self.game_loop)
+        self.after(100, self.game_loop)
         
     def enforce_rules(self):
         temp_cells = [[0 for x in range(self.grid.width)] for x in range(self.grid.height)]
@@ -94,5 +110,12 @@ class Game(tk.Tk):
                     self.canvas.create_rectangle(j * 10, i * 10, j * 10 + 10 , i * 10 + 10, fill="#EEEEEE", outline="#222222")
 
 if __name__ == "__main__":
-    game = Game()
-    game.mainloop()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--file_name', type = str, required = False)
+    args = parser.parse_args()
+    if args.file_name:
+        game = Game(args.file_name)
+        game.mainloop()
+    else:
+        game = Game()
+        game.mainloop()
