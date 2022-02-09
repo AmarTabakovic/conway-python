@@ -24,3 +24,9 @@ Example:
 16,21
 18,21
 ```
+
+### Keys
+
+- `Esc`: Exit the game
+- `Space`: Pause the game
+- `R`: Restart the game with a random pattern (if no text file was passed) or with the given text file

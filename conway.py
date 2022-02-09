@@ -18,6 +18,8 @@ class Game(tk.Tk):
         self.grid = Grid()
         self.window_width = 1000
         self.window_height = 1000
+        self.paused = False
+        self.file_name = file_name
         
         self.canvas = tk.Canvas(self, width=self.window_width, height=self.window_height, bg="#000000", bd=0, highlightthickness=0, relief='ridge')
         self.canvas.pack()
@@ -28,16 +30,40 @@ class Game(tk.Tk):
         else:
             self.init_from_file(file_name=file_name)
 
+        self.bind("<KeyPress-r>", self.restart)
+        self.bind("<space>", self.pause)
+        self.bind("<Escape>", self.exit_game)
+
         self.game_loop()
+
+    def exit_game(self, event):
+        exit(0)
+    
+    def restart(self, event):
+        self.grid = Grid()
+        if self.file_name:
+            self.init_from_file(self.file_name)
+        else:
+            self.init_random()
+        if self.paused:
+            self.paused = False
+            self.game_loop()
+    
+    def pause(self, event):
+        if self.paused:
+            self.paused = False
+            self.game_loop()
+        else:
+            self.paused = True
 
     def init_from_file(self, file_name):
         try:
             file = open(file_name, "r")
-            csv_reader = csv.reader(file, delimiter=",")
+            csv_reader = csv.reader(file, delimiter = ",")
             for row in csv_reader:
                 self.grid.cells[int(row[1])][int(row[0])] = 1
         except FileNotFoundError:
-            print("File does not exist")
+            print("Error: File does not exist")
             exit(1)
 
     def init_random(self):
@@ -51,10 +77,11 @@ class Game(tk.Tk):
                 i += 1
 
     def game_loop(self):
-        self.canvas.delete("all")
-        self.draw()
-        self.enforce_rules()
-        self.after(50, self.game_loop)
+        if not self.paused:
+            self.canvas.delete("all")
+            self.draw()
+            self.enforce_rules()
+            self.after(50, self.game_loop)
         
     def enforce_rules(self):
         temp_cells = [[0 for x in range(self.grid.width)] for x in range(self.grid.height)]
