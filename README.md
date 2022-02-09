@@ -30,3 +30,5 @@ Example:
 - `Esc`: Exit the game
 - `Space`: Pause/Unpause the game
 - `R`: Restart the game with a random pattern (if no text file was passed) or with the pattern of the given text file
+- `Up`: Increase speed
+- `Down`: Decrease speed

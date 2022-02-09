@@ -19,6 +19,7 @@ class Game(tk.Tk):
         self.window_width = 1000
         self.window_height = 1000
         self.paused = False
+        self.delay = 100
         self.file_name = file_name
         
         self.canvas = tk.Canvas(self, width=self.window_width, height=self.window_height, bg="#000000", bd=0, highlightthickness=0, relief='ridge')
@@ -33,8 +34,18 @@ class Game(tk.Tk):
         self.bind("<KeyPress-r>", self.restart)
         self.bind("<space>", self.pause)
         self.bind("<Escape>", self.exit_game)
+        self.bind("<Up>", self.speed_up)
+        self.bind("<Down>", self.slow_down)
 
         self.game_loop()
+
+    def speed_up(self, event):
+        if self.delay > 10:
+            self.delay -= 10
+    
+    def slow_down(self, event):
+        if self.delay < 1000:
+            self.delay += 10
 
     def exit_game(self, event):
         exit(0)
@@ -81,7 +92,7 @@ class Game(tk.Tk):
             self.canvas.delete("all")
             self.draw()
             self.enforce_rules()
-            self.after(50, self.game_loop)
+            self.after(self.delay, self.game_loop)
         
     def enforce_rules(self):
         temp_cells = [[0 for x in range(self.grid.width)] for x in range(self.grid.height)]
