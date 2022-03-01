@@ -22,7 +22,7 @@ class Game(tk.Tk):
         self.delay = 100
         self.file_name = file_name
         
-        self.canvas = tk.Canvas(self, width=self.window_width, height=self.window_height, bg="#000000", bd=0, highlightthickness=0, relief='ridge')
+        self.canvas = tk.Canvas(self, width=self.window_width, height=self.window_height, bg="#2e3440", bd=0, highlightthickness=0, relief='ridge')
         self.canvas.pack()
         self.title("Conway's Game of Life")
 
