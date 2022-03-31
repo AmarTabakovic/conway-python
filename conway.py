@@ -4,16 +4,19 @@ import argparse
 import math
 import csv
 
+
 class Grid():
     def __init__(self):
         self.width = 100
         self.height = 100
-        self.cells = [[0 for x in range(self.width)] for x in range(self.height)]
+        self.cells = [[0 for x in range(self.width)]
+                      for x in range(self.height)]
         self.center_x = math.floor(self.width / 2)
         self.center_y = math.floor(self.height / 2)
 
+
 class Game(tk.Tk):
-    def __init__(self, file_name = None):
+    def __init__(self, file_name=None):
         tk.Tk.__init__(self)
         self.grid = Grid()
         self.window_width = 1000
@@ -21,8 +24,12 @@ class Game(tk.Tk):
         self.paused = False
         self.delay = 100
         self.file_name = file_name
-        
-        self.canvas = tk.Canvas(self, width=self.window_width, height=self.window_height, bg="#2e3440", bd=0, highlightthickness=0, relief='ridge')
+        self.color_grid = "#2E3440"
+        self.color_cell_fill = "#EEEEEE"
+        self.color_cell_outline = "#222222"
+
+        self.canvas = tk.Canvas(self, width=self.window_width, height=self.window_height,
+                                bg=self.color_grid, bd=0, highlightthickness=0, relief='ridge')
         self.canvas.pack()
         self.title("Conway's Game of Life")
 
@@ -31,6 +38,7 @@ class Game(tk.Tk):
         else:
             self.init_from_file(file_name=file_name)
 
+        # Keypress bindings
         self.bind("<KeyPress-r>", self.restart)
         self.bind("<space>", self.pause)
         self.bind("<Escape>", self.exit_game)
@@ -42,14 +50,14 @@ class Game(tk.Tk):
     def speed_up(self, event):
         if self.delay > 10:
             self.delay -= 10
-    
+
     def slow_down(self, event):
         if self.delay < 1000:
             self.delay += 10
 
     def exit_game(self, event):
         exit(0)
-    
+
     def restart(self, event):
         self.grid = Grid()
         if self.file_name:
@@ -59,7 +67,7 @@ class Game(tk.Tk):
         if self.paused:
             self.paused = False
             self.game_loop()
-    
+
     def pause(self, event):
         if self.paused:
             self.paused = False
@@ -70,9 +78,22 @@ class Game(tk.Tk):
     def init_from_file(self, file_name):
         try:
             file = open(file_name, "r")
-            csv_reader = csv.reader(file, delimiter = ",")
+            csv_reader = csv.reader(file, delimiter=",")
             for row in csv_reader:
-                self.grid.cells[int(row[1])][int(row[0])] = 1
+                # Catch negative indices
+                cell = (int(row[1]), int(row[0]))
+                if cell[0] < 0 or cell[1] < 0:
+                    print("Error: No negative indices are allowed.")
+                    exit(1)
+                self.grid.cells[cell[0]][cell[1]] = 1
+        # Catch non-integer indices
+        except ValueError:
+            print(
+                "Error: Please check that your file only contains integers separated by commas")
+            exit(1)
+        except IndexError:
+            print("Error: One of your coordinates is out of bounds")
+            exit(1)
         except FileNotFoundError:
             print("Error: File does not exist")
             exit(1)
@@ -93,24 +114,25 @@ class Game(tk.Tk):
             self.draw()
             self.enforce_rules()
             self.after(self.delay, self.game_loop)
-        
+
     def enforce_rules(self):
-        temp_cells = [[0 for x in range(self.grid.width)] for x in range(self.grid.height)]
+        temp_cells = [[0 for x in range(self.grid.width)]
+                      for x in range(self.grid.height)]
 
         for i in range(self.grid.height):
-            for j in range(self.grid.width): 
+            for j in range(self.grid.width):
                 number_neighbors = self.get_number_of_neighbors(j, i)
-                
+
                 # Rule 2: Any live cell with two or there live neighbours lives on to the next generation.
                 if self.grid.cells[i][j] == 1 and (number_neighbors == 2 or number_neighbors == 3):
                     temp_cells[i][j] = 1
-                
+
                 # Rule 4: Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
                 elif self.grid.cells[i][j] == 0 and number_neighbors == 3:
                     temp_cells[i][j] = 1
-        
+
         self.grid.cells = temp_cells
-    
+
     def get_number_of_neighbors(self, x, y):
         n = 0
         # Right
@@ -123,7 +145,7 @@ class Game(tk.Tk):
         if y + 1 < self.grid.height and self.grid.cells[y + 1][x] == 1:
             n += 1
         # Below
-        if y - 1 >= 0 and  self.grid.cells[y - 1][x] == 1:
+        if y - 1 >= 0 and self.grid.cells[y - 1][x] == 1:
             n += 1
         # Diagonally above and left
         if y + 1 < self.grid.height and x - 1 >= 0 and self.grid.cells[y + 1][x - 1] == 1:
@@ -144,11 +166,13 @@ class Game(tk.Tk):
         for i in range(self.grid.height):
             for j in range(self.grid.width):
                 if self.grid.cells[i][j] == 1:
-                    self.canvas.create_rectangle(j * 10, i * 10, j * 10 + 10 , i * 10 + 10, fill="#EEEEEE", outline="#222222")
+                    self.canvas.create_rectangle(
+                        j * 10, i * 10, j * 10 + 10, i * 10 + 10, fill=self.color_cell_fill, outline=self.color_cell_outline)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_name', type = str, required = False)
+    parser.add_argument('--file_name', type=str, required=False)
     args = parser.parse_args()
     if args.file_name:
         game = Game(args.file_name)
