@@ -116,8 +116,8 @@ class Game(tk.Tk):
             self.after(self.delay, self.game_loop)
 
     def enforce_rules(self):
-        temp_cells = [[0 for x in range(self.grid.width)]
-                      for x in range(self.grid.height)]
+        next_generation = [[0 for x in range(self.grid.width)]
+                           for x in range(self.grid.height)]
 
         for i in range(self.grid.height):
             for j in range(self.grid.width):
@@ -125,40 +125,30 @@ class Game(tk.Tk):
 
                 # Rule 2: Any live cell with two or there live neighbours lives on to the next generation.
                 if self.grid.cells[i][j] == 1 and (number_neighbors == 2 or number_neighbors == 3):
-                    temp_cells[i][j] = 1
+                    next_generation[i][j] = 1
 
                 # Rule 4: Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
                 elif self.grid.cells[i][j] == 0 and number_neighbors == 3:
-                    temp_cells[i][j] = 1
+                    next_generation[i][j] = 1
 
-        self.grid.cells = temp_cells
+        self.grid.cells = next_generation
 
     def get_number_of_neighbors(self, x, y):
         n = 0
-        # Right
-        if x + 1 < self.grid.width and self.grid.cells[y][x + 1] == 1:
-            n += 1
-        # Left
-        if x - 1 >= 0 and self.grid.cells[y][x - 1] == 1:
-            n += 1
-        # Above
-        if y + 1 < self.grid.height and self.grid.cells[y + 1][x] == 1:
-            n += 1
-        # Below
-        if y - 1 >= 0 and self.grid.cells[y - 1][x] == 1:
-            n += 1
-        # Diagonally above and left
-        if y + 1 < self.grid.height and x - 1 >= 0 and self.grid.cells[y + 1][x - 1] == 1:
-            n += 1
-        # Diagonally above and right
-        if y + 1 < self.grid.height and x + 1 < self.grid.width and self.grid.cells[y + 1][x + 1] == 1:
-            n += 1
-        # Diagonally below and left
-        if y - 1 >= 0 and x - 1 >= 0 and self.grid.cells[y - 1][x - 1] == 1:
-            n += 1
-        # Diagonally below and right
-        if x + 1 < self.grid.width and y - 1 >= 0 and self.grid.cells[y - 1][x + 1] == 1:
-            n += 1
+
+        # Calculate minimum and maximum (x,y) values in order
+        # to avoid going out of bounds.
+        y_min = max(y - 1, 0)
+        y_max = min(y + 1, self.grid.height - 1)
+        x_min = max(x - 1, 0)
+        x_max = min(x + 1, self.grid.width - 1)
+
+        for i in range(y_min, y_max + 1):
+            for j in range(x_min, x_max + 1):
+                if i == y and j == x:
+                    continue
+                if self.grid.cells[i][j] == 1:
+                    n += 1
 
         return n
 
@@ -172,11 +162,11 @@ class Game(tk.Tk):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_name', type=str, required=False)
+    parser.add_argument("--file_name", type=str, required=False)
     args = parser.parse_args()
+    game = None
     if args.file_name:
         game = Game(args.file_name)
-        game.mainloop()
     else:
         game = Game()
-        game.mainloop()
+    game.mainloop()
